@@ -5,79 +5,59 @@ import {
     integer,
     primaryKey,
     date,
+    timestamp,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { AdapterAccount } from "@auth/core/adapters";
 
-// users
-export const users = pgTable("users", {
-    id: serial("id").primaryKey(),
+export const users = pgTable("user", {
+    id: text("id").notNull().primaryKey(),
     name: text("name"),
+    email: text("email").notNull(),
+    emailVerified: timestamp("emailVerified", { mode: "date" }),
+    image: text("image"),
 });
 
-// user relations
-export const userRelations = relations(users, ({ many }) => ({
-    userAttempts: many(attempts),
-}));
-
-export const comps = pgTable("comps", {
-    id: serial("id").primaryKey(),
-    createdAt: date("date", { mode: "string" }).defaultNow(),
-    status: text("status", { enum: ["in_progress", "ended", "cancelled"] }),
-});
-
-export const attempts = pgTable("attempts", {
-    attemptId: serial("attempt_id").primaryKey(),
-    compId: integer("comp_id")
-        .notNull()
-        .references(() => comps.id),
-    userId: integer("user_id")
-        .notNull()
-        .references(() => users.id),
-    grade: text("grade", {
-        enum: ["1_3", "2_4", "3_5", "4_6", "5_7", "7+"],
-    }),
-    pts: integer("pts"),
-});
-
-export const compParticipants = pgTable(
-    "comp_participants",
+export const accounts = pgTable(
+    "account",
     {
-        compId: integer("comp_id")
+        userId: text("userId")
             .notNull()
-            .references(() => comps.id),
-        userId: integer("user_id")
-            .notNull()
-            .references(() => users.id),
-        score: integer("score").default(0),
+            .references(() => users.id, { onDelete: "cascade" }),
+        type: text("type").$type<AdapterAccount["type"]>().notNull(),
+        provider: text("provider").notNull(),
+        providerAccountId: text("providerAccountId").notNull(),
+        refresh_token: text("refresh_token"),
+        access_token: text("access_token"),
+        expires_at: integer("expires_at"),
+        token_type: text("token_type"),
+        scope: text("scope"),
+        id_token: text("id_token"),
+        session_state: text("session_state"),
     },
-    (t) => ({
-        pk: primaryKey({ columns: [t.userId, t.compId] }),
+    (account) => ({
+        compoundKey: primaryKey({
+            columns: [account.provider, account.providerAccountId],
+        }),
     })
 );
 
-export const compRelations = relations(comps, ({ many }) => ({
-    attempts: many(attempts),
-    participants: many(compParticipants),
-}));
+export const sessions = pgTable("session", {
+    sessionToken: text("sessionToken").notNull().primaryKey(),
+    userId: text("userId")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
+    expires: timestamp("expires", { mode: "date" }).notNull(),
+});
 
-export const compAttemptRelations = relations(attempts, ({ one }) => ({
-    comp: one(comps, {
-        fields: [attempts.userId],
-        references: [comps.id],
-    }),
-    user: one(users, {
-        fields: [attempts.userId],
-        references: [users.id],
-    }),
-}));
-
-export const compUserRelations = relations(compParticipants, ({ one }) => ({
-    user: one(users, {
-        fields: [compParticipants.userId],
-        references: [users.id],
-    }),
-    comp: one(comps, {
-        fields: [compParticipants.compId],
-        references: [comps.id],
-    }),
-}));
+export const verificationTokens = pgTable(
+    "verificationToken",
+    {
+        identifier: text("identifier").notNull(),
+        token: text("token").notNull(),
+        expires: timestamp("expires", { mode: "date" }).notNull(),
+    },
+    (vt) => ({
+        compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+    })
+);
