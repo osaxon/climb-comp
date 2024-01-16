@@ -6,6 +6,7 @@ import {
     primaryKey,
     date,
     timestamp,
+    boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import type { AdapterAccount } from "@auth/core/adapters";
@@ -61,3 +62,84 @@ export const verificationTokens = pgTable(
         compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
     })
 );
+
+export const comps = pgTable("comp", {
+    id: serial("id").primaryKey(),
+    createdAt: date("created_at").defaultNow(),
+    status: text("status", { enum: ["in progress", "ended"] }).notNull(),
+});
+
+export const compParticipants = pgTable(
+    "comp_participant",
+    {
+        compId: integer("comp_id")
+            .notNull()
+            .references(() => comps.id, { onDelete: "cascade" }),
+        userId: text("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        remainingAttempts: integer("remaining_attempts").default(20),
+        score: integer("score").default(0),
+        isWinner: boolean("is_winner").default(false),
+        createdAt: date("created_at").defaultNow(),
+        locationId: integer("location_id").references(() => locations.id),
+    },
+    (c) => ({
+        primaryKey: primaryKey({ columns: [c.compId, c.userId] }),
+    })
+);
+
+export const attempts = pgTable("attempt", {
+    id: serial("id").primaryKey(),
+    compId: integer("comp_id")
+        .notNull()
+        .references(() => comps.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+        .notNull()
+        .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: date("created_at").defaultNow(),
+    gradeId: integer("grade_id").references(() => grades.id),
+    score: integer("score").default(0),
+});
+
+export const locations = pgTable("location", {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+});
+
+export const grades = pgTable("grade", {
+    id: serial("id").primaryKey(),
+    name: text("name").notNull(),
+    value: integer("value").notNull(),
+});
+
+export const userRelations = relations(users, ({ many }) => ({
+    userAttempts: many(attempts),
+}));
+
+export const compRelations = relations(comps, ({ many }) => ({
+    attempts: many(attempts),
+    participants: many(compParticipants),
+}));
+
+export const compAttemptRelations = relations(attempts, ({ one }) => ({
+    comp: one(comps, {
+        fields: [attempts.compId],
+        references: [comps.id],
+    }),
+    user: one(users, {
+        fields: [attempts.userId],
+        references: [users.id],
+    }),
+}));
+
+export const compUserRelations = relations(compParticipants, ({ one }) => ({
+    user: one(users, {
+        fields: [compParticipants.userId],
+        references: [users.id],
+    }),
+    comp: one(comps, {
+        fields: [compParticipants.compId],
+        references: [comps.id],
+    }),
+}));
