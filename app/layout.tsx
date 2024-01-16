@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -19,7 +20,8 @@ export default function RootLayout({
         <html className="dark" lang="en">
             <body className={inter.className}>
                 <Nav />
-                {children}
+                <div className="max-w-5xl mx-auto">{children}</div>
+                <Toaster />
             </body>
         </html>
     );
