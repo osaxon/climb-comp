@@ -15,6 +15,20 @@
       "when": 1705433200485,
       "tag": "0001_modern_angel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1705439291454,
+      "tag": "0002_lame_blindfold",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1705439682524,
+      "tag": "0003_chilly_korath",
+      "breakpoints": true
     }
   ]
 }

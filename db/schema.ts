@@ -10,6 +10,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import type { AdapterAccount } from "@auth/core/adapters";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { z } from "zod";
 
 export const users = pgTable("user", {
     id: text("id").notNull().primaryKey(),
@@ -66,8 +68,26 @@ export const verificationTokens = pgTable(
 export const comps = pgTable("comp", {
     id: serial("id").primaryKey(),
     createdAt: date("created_at").defaultNow(),
-    status: text("status", { enum: ["in progress", "ended"] }).notNull(),
+    locationId: integer("location_id").references(() => locations.id),
+    status: text("status", {
+        enum: ["open", "in progress", "ended"],
+    }).notNull(),
 });
+
+export const followers = pgTable(
+    "followers",
+    {
+        userId: text("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        followingId: text("following_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+    },
+    (c) => ({
+        primaryKey: primaryKey({ columns: [c.userId, c.followingId] }),
+    })
+);
 
 export const compParticipants = pgTable(
     "comp_participant",
@@ -115,11 +135,35 @@ export const grades = pgTable("grade", {
 
 export const userRelations = relations(users, ({ many }) => ({
     userAttempts: many(attempts),
+    followers: many(followers),
+    following: many(followers),
 }));
 
-export const compRelations = relations(comps, ({ many }) => ({
+export const userFollowersRelations = relations(followers, ({ one }) => ({
+    user: one(users, {
+        fields: [followers.userId],
+        references: [users.id],
+    }),
+}));
+
+export const userFollowingRelations = relations(followers, ({ one }) => ({
+    user: one(users, {
+        fields: [followers.followingId],
+        references: [users.id],
+    }),
+}));
+
+export const compRelations = relations(comps, ({ many, one }) => ({
     attempts: many(attempts),
     participants: many(compParticipants),
+    location: one(locations, {
+        fields: [comps.locationId],
+        references: [locations.id],
+    }),
+}));
+
+export const locationRelations = relations(locations, ({ many }) => ({
+    comps: many(comps),
 }));
 
 export const compAttemptRelations = relations(attempts, ({ one }) => ({
@@ -143,3 +187,5 @@ export const compUserRelations = relations(compParticipants, ({ one }) => ({
         references: [comps.id],
     }),
 }));
+
+export const insertCompSchema = createInsertSchema(comps);
