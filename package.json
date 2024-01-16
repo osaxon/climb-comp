@@ -7,10 +7,11 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
-        "db:setup": "psql -f db/setup.sql",
+        "db:setup": "psql -h 127.0.0.1 -p 5439 -U climb_comp -f db/setup.sql",
         "db:generate": "bunx drizzle-kit generate:pg",
         "db:migrate": "bun run db/migrate.ts",
-        "db:seed": "psql -d climb_comp -h 127.0.0.1 -p 5439 -U climb_comp -f db/seed.sql",
+        "_db:seed": "psql -d climb_comp -h 127.0.0.1 -p 5439 -U climb_comp -f db/seed.sql",
+        "db:seed": "bun run db/seed.ts",
         "db:studio": "bunx drizzle-kit studio"
     },
     "dependencies": {
