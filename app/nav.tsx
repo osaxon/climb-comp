@@ -1,8 +1,8 @@
 import { auth } from "@/auth/auth";
 
+import { AuthButton } from "@/components/auth/auth-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { signOut } from "next-auth/react";
-import SignoutButton from "./me/sign-out-button";
+import { Button } from "@/components/ui/button";
 
 export default async function Nav() {
     const session = await auth();
@@ -16,7 +16,9 @@ export default async function Nav() {
                 </Avatar>
                 <span className="text-white">{session?.user?.name}</span>
             </div>
-            <SignoutButton signOut={signOut} />
+            <AuthButton>
+                <Button>Sign Out</Button>
+            </AuthButton>
         </div>
     );
 }
