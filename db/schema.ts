@@ -7,6 +7,7 @@ import {
     date,
     timestamp,
     boolean,
+    varchar,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import type { AdapterAccount } from "@auth/core/adapters";
@@ -17,6 +18,7 @@ export const users = pgTable("user", {
     id: text("id").notNull().primaryKey(),
     name: text("name"),
     email: text("email").notNull(),
+    password: varchar("password", { length: 100 }),
     emailVerified: timestamp("emailVerified", { mode: "date" }),
     image: text("image"),
 });
@@ -189,3 +191,14 @@ export const compUserRelations = relations(compParticipants, ({ one }) => ({
 }));
 
 export const insertCompSchema = createInsertSchema(comps);
+
+export const insertUserSchema = createInsertSchema(users, {
+    password: (schema) => schema.password.min(1),
+});
+
+export const newUserSchema = insertUserSchema.pick({
+    email: true,
+    password: true,
+});
+
+export type NewUser = z.infer<typeof newUserSchema>;

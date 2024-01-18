@@ -1,21 +1,31 @@
 "use client";
-import { LoginSchema } from "@/schemas";
+import { login } from "@/actions";
+import { newUserSchema, type NewUser } from "@/db/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "../ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
 import { AuthCard } from "./auth-card";
 
 export const LoginForm = () => {
-    const form = useForm<z.infer<typeof LoginSchema>>({
-        resolver: zodResolver(LoginSchema),
+    const [isPending, startTransition] = useTransition();
+    const form = useForm<NewUser>({
+        resolver: zodResolver(newUserSchema),
         defaultValues: {
             email: "",
             password: "",
         },
     });
+
+    const onSubmit = (values: NewUser) => {
+        startTransition(() => {
+            console.log(values);
+            login(values);
+        });
+    };
+
     return (
         <AuthCard
             headerLabel="Welcome back!"
@@ -25,7 +35,7 @@ export const LoginForm = () => {
         >
             <Form {...form}>
                 <form
-                    onSubmit={form.handleSubmit(() => console.log("submitted"))}
+                    onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6"
                 >
                     <div className="space-y-4">
@@ -38,6 +48,7 @@ export const LoginForm = () => {
                                     <FormControl>
                                         <Input
                                             {...field}
+                                            disabled={isPending}
                                             placeholder="something@email.com"
                                             type="email"
                                         />
@@ -55,6 +66,7 @@ export const LoginForm = () => {
                                         <Input
                                             {...field}
                                             type="password"
+                                            disabled={isPending}
                                             placeholder="********"
                                         />
                                     </FormControl>
@@ -62,7 +74,12 @@ export const LoginForm = () => {
                             )}
                         />
                     </div>
-                    <Button type="submit" className="w-full">
+
+                    <Button
+                        disabled={isPending}
+                        type="submit"
+                        className="w-full"
+                    >
                         Login
                     </Button>
                 </form>
