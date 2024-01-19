@@ -5,8 +5,9 @@ import { pool, db } from "./index";
 try {
     console.log("migrating database");
     await migrate(db, { migrationsFolder: "./drizzle" });
-    await pool.end();
     console.log("migrations complete");
 } catch (error) {
     console.log(error);
+} finally {
+    await pool.end();
 }

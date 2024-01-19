@@ -1,5 +1,5 @@
 import { auth } from "@/auth/lucia";
-import { LoginForm } from "@/components/auth/login-form";
+import { SignUpForm } from "@/components/auth/sign-up-form";
 import * as context from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -10,9 +10,10 @@ export default async function LoginPage() {
     if (session) {
         redirect("/");
     }
+
     return (
         <div>
-            <LoginForm />
+            <SignUpForm />
         </div>
     );
 }
