@@ -1,5 +1,7 @@
 import { NewCompForm } from "./NewCompForm";
+import { db } from "@/db";
 
 export default async function NewCompPage() {
-    return <NewCompForm />;
+    const locations = await db.query.locations.findMany();
+    return <NewCompForm locations={locations}/>;
 }

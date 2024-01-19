@@ -27,6 +27,8 @@ export const user = pgTable("auth_user", {
         .notNull()
         .unique(),
 });
+const userSchema = createSelectSchema(user);
+export type User = z.infer<typeof userSchema>;
 
 export const session = pgTable("user_session", {
     id: varchar("id", {
@@ -64,10 +66,14 @@ export const key = pgTable("user_key", {
 export const comps = pgTable("comp", {
     id: serial("id").primaryKey(),
     createdAt: date("created_at").defaultNow(),
-    locationId: integer("location_id").references(() => locations.id),
+    locationId: integer("location_id")
+        .references(() => locations.id)
+        .notNull(),
     status: text("status", {
         enum: ["open", "in progress", "ended"],
-    }).notNull(),
+    })
+        .default("open")
+        .notNull(),
 });
 
 export const followers = pgTable(
@@ -104,6 +110,7 @@ export const compParticipants = pgTable(
         primaryKey: primaryKey({ columns: [c.compId, c.userId] }),
     })
 );
+export const compParticipantsSchema = createSelectSchema(compParticipants);
 
 export const attempts = pgTable("attempt", {
     id: serial("id").primaryKey(),
@@ -122,6 +129,9 @@ export const locations = pgTable("location", {
     id: serial("id").primaryKey(),
     name: text("name").notNull(),
 });
+
+export const locationsSchema = createSelectSchema(locations);
+export type Location = z.infer<typeof locationsSchema>;
 
 export const grades = pgTable("grade", {
     id: serial("id").primaryKey(),

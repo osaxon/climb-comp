@@ -6,6 +6,7 @@ import { pool } from "@/db";
 import { cache } from "react";
 import * as context from "next/headers";
 import { SessionOptions } from "http2";
+import { User } from "@/db/schema";
 
 export const auth = lucia({
     env: "DEV",
@@ -36,7 +37,7 @@ export const getPageSession = cache(() => {
 // TODO - move to types/app.d.ts
 // Lucia does not export this type currently
 export type Session = {
-    user: { username: string; userId: string };
+    user: User;
     sessionId: string;
     activePeriodExpiresAt: Date;
     idlePeriodExpiresAt: Date;
