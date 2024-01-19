@@ -8,64 +8,58 @@ import {
     timestamp,
     boolean,
     varchar,
+    bigint,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
-export const users = pgTable("user", {
-    id: text("id").notNull().primaryKey(),
-    name: text("name"),
-    email: text("email").notNull(),
-    password: varchar("password", { length: 100 }),
-    emailVerified: timestamp("emailVerified", { mode: "date" }),
-    image: text("image"),
-});
-
-export const accounts = pgTable(
-    "account",
-    {
-        userId: text("userId")
-            .notNull()
-            .references(() => users.id, { onDelete: "cascade" }),
-        type: text("type").$type<AdapterAccount["type"]>().notNull(),
-        provider: text("provider").notNull(),
-        providerAccountId: text("providerAccountId").notNull(),
-        refresh_token: text("refresh_token"),
-        access_token: text("access_token"),
-        expires_at: integer("expires_at"),
-        token_type: text("token_type"),
-        scope: text("scope"),
-        id_token: text("id_token"),
-        session_state: text("session_state"),
-    },
-    (account) => ({
-        compoundKey: primaryKey({
-            columns: [account.provider, account.providerAccountId],
-        }),
+// LUCIA
+export const user = pgTable("auth_user", {
+    id: varchar("id", {
+        length: 15, // change this when using custom user ids
+    }).primaryKey(),
+    // other user attributes
+    username: varchar("username", {
+        length: 31,
     })
-);
-
-export const sessions = pgTable("session", {
-    sessionToken: text("sessionToken").notNull().primaryKey(),
-    userId: text("userId")
         .notNull()
-        .references(() => users.id, { onDelete: "cascade" }),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
+        .unique(),
 });
 
-export const verificationTokens = pgTable(
-    "verificationToken",
-    {
-        identifier: text("identifier").notNull(),
-        token: text("token").notNull(),
-        expires: timestamp("expires", { mode: "date" }).notNull(),
-    },
-    (vt) => ({
-        compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
+export const session = pgTable("user_session", {
+    id: varchar("id", {
+        length: 128,
+    }).primaryKey(),
+    userId: varchar("user_id", {
+        length: 15,
     })
-);
+        .notNull()
+        .references(() => user.id),
+    activeExpires: bigint("active_expires", {
+        mode: "number",
+    }).notNull(),
+    idleExpires: bigint("idle_expires", {
+        mode: "number",
+    }).notNull(),
+});
+
+export const key = pgTable("user_key", {
+    id: varchar("id", {
+        length: 255,
+    }).primaryKey(),
+    userId: varchar("user_id", {
+        length: 15,
+    })
+        .notNull()
+        .references(() => user.id),
+    hashedPassword: varchar("hashed_password", {
+        length: 255,
+    }),
+});
+
+/// LUCIA
 
 export const comps = pgTable("comp", {
     id: serial("id").primaryKey(),
@@ -81,10 +75,10 @@ export const followers = pgTable(
     {
         userId: text("user_id")
             .notNull()
-            .references(() => users.id, { onDelete: "cascade" }),
+            .references(() => user.id, { onDelete: "cascade" }),
         followingId: text("following_id")
             .notNull()
-            .references(() => users.id, { onDelete: "cascade" }),
+            .references(() => user.id, { onDelete: "cascade" }),
     },
     (c) => ({
         primaryKey: primaryKey({ columns: [c.userId, c.followingId] }),
@@ -99,7 +93,7 @@ export const compParticipants = pgTable(
             .references(() => comps.id, { onDelete: "cascade" }),
         userId: text("user_id")
             .notNull()
-            .references(() => users.id, { onDelete: "cascade" }),
+            .references(() => user.id, { onDelete: "cascade" }),
         remainingAttempts: integer("remaining_attempts").default(20),
         score: integer("score").default(0),
         isWinner: boolean("is_winner").default(false),
@@ -118,7 +112,7 @@ export const attempts = pgTable("attempt", {
         .references(() => comps.id, { onDelete: "cascade" }),
     userId: text("user_id")
         .notNull()
-        .references(() => users.id, { onDelete: "cascade" }),
+        .references(() => user.id, { onDelete: "cascade" }),
     createdAt: date("created_at").defaultNow(),
     gradeId: integer("grade_id").references(() => grades.id),
     score: integer("score").default(0),
@@ -135,23 +129,23 @@ export const grades = pgTable("grade", {
     value: integer("value").notNull(),
 });
 
-export const userRelations = relations(users, ({ many }) => ({
+export const userRelations = relations(user, ({ many }) => ({
     userAttempts: many(attempts),
     followers: many(followers),
     following: many(followers),
 }));
 
 export const userFollowersRelations = relations(followers, ({ one }) => ({
-    user: one(users, {
+    user: one(user, {
         fields: [followers.userId],
-        references: [users.id],
+        references: [user.id],
     }),
 }));
 
 export const userFollowingRelations = relations(followers, ({ one }) => ({
-    user: one(users, {
+    user: one(user, {
         fields: [followers.followingId],
-        references: [users.id],
+        references: [user.id],
     }),
 }));
 
@@ -173,16 +167,16 @@ export const compAttemptRelations = relations(attempts, ({ one }) => ({
         fields: [attempts.compId],
         references: [comps.id],
     }),
-    user: one(users, {
+    user: one(user, {
         fields: [attempts.userId],
-        references: [users.id],
+        references: [user.id],
     }),
 }));
 
 export const compUserRelations = relations(compParticipants, ({ one }) => ({
-    user: one(users, {
+    user: one(user, {
         fields: [compParticipants.userId],
-        references: [users.id],
+        references: [user.id],
     }),
     comp: one(comps, {
         fields: [compParticipants.compId],
@@ -191,14 +185,3 @@ export const compUserRelations = relations(compParticipants, ({ one }) => ({
 }));
 
 export const insertCompSchema = createInsertSchema(comps);
-
-export const insertUserSchema = createInsertSchema(users, {
-    password: (schema) => schema.password.min(1),
-});
-
-export const newUserSchema = insertUserSchema.pick({
-    email: true,
-    password: true,
-});
-
-export type NewUser = z.infer<typeof newUserSchema>;
