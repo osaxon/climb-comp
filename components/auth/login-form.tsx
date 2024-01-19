@@ -1,31 +1,30 @@
 "use client";
-import { login } from "@/actions";
 import { LoginSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { Form, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
 import { Button } from "../ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
+import {
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    Form as FormProvider,
+} from "../ui/form";
 import { Input } from "../ui/input";
 import { AuthCard } from "./auth-card";
 
 export const LoginForm = () => {
-    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
         defaultValues: {
-            email: "",
+            username: "",
             password: "",
         },
     });
-
-    const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-        startTransition(() => {
-            console.log(values);
-            login(values);
-        });
-    };
 
     return (
         <AuthCard
@@ -34,24 +33,25 @@ export const LoginForm = () => {
             backHref="/auth/signup"
             showSocialButtons
         >
-            <Form {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onSubmit)}
+            <FormProvider {...form}>
+                <Form
+                    action="/api/auth/login"
+                    onSuccess={() => router.refresh()}
+                    onError={() => toast.error("Something went wrong.")}
                     className="space-y-6"
                 >
                     <div className="space-y-4">
                         <FormField
                             control={form.control}
-                            name="email"
+                            name="username"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Email</FormLabel>
+                                    <FormLabel>Username</FormLabel>
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            disabled={isPending}
-                                            placeholder="something@email.com"
-                                            type="email"
+                                            placeholder="your username"
+                                            type="text"
                                         />
                                     </FormControl>
                                 </FormItem>
@@ -67,7 +67,6 @@ export const LoginForm = () => {
                                         <Input
                                             {...field}
                                             type="password"
-                                            disabled={isPending}
                                             placeholder="********"
                                         />
                                     </FormControl>
@@ -76,15 +75,11 @@ export const LoginForm = () => {
                         />
                     </div>
 
-                    <Button
-                        disabled={isPending}
-                        type="submit"
-                        className="w-full"
-                    >
+                    <Button type="submit" className="w-full">
                         Login
                     </Button>
-                </form>
-            </Form>
+                </Form>
+            </FormProvider>
         </AuthCard>
     );
 };

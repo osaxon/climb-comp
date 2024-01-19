@@ -1,0 +1,86 @@
+{
+    "grades": [
+        {
+            "name": "V1-V3",
+            "value": 10
+        },
+        {
+            "name": "V2-V3",
+            "value": 20
+        },
+        {
+            "name": "V3-V3",
+            "value": 30
+        },
+        {
+            "name": "V4-V3",
+            "value": 40
+        },
+        {
+            "name": "V5-V3",
+            "value": 50
+        },
+        {
+            "name": "V6-V3",
+            "value": 60
+        },
+        {
+            "name": "V7-V3",
+            "value": 70
+        },
+        {
+            "name": "V8-V3",
+            "value": 80
+        },
+        {
+            "name": "V9-V3",
+            "value": 90
+        },
+        {
+            "name": "V10-V3",
+            "value": 100
+        }
+    ],
+    "users": [
+        {
+            "id": "test-user-001",
+            "username": "test-user-001"
+        },
+        {
+            "id": "test-user-002",
+            "username": "test-user-002"
+        },
+        {
+            "id": "test-user-003",
+            "username": "test-user-003"
+        },
+        {
+            "id": "test-user-004",
+            "username": "test-user-004"
+        },
+        {
+            "id": "test-user-005",
+            "username": "test-user-005"
+        }
+    ],
+    "locations": [
+        {
+            "name": "The Depot"
+        },
+        {
+            "name": "Rockover - Manchester"
+        },
+        {
+            "name": "Rockover - Bolton"
+        },
+        {
+            "name": "Blochaus"
+        },
+        {
+            "name": "The Parthian"
+        },
+        {
+            "name": "The Climbing Works"
+        }
+    ]
+}

@@ -1,7 +1,7 @@
 "use client";
 import { SignUpSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Form, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -17,7 +17,7 @@ import { Input } from "../ui/input";
 import { AuthCard } from "./auth-card";
 
 export const SignUpForm = () => {
-    const [isPending, startTransition] = useTransition();
+    const router = useRouter();
     const form = useForm<z.infer<typeof SignUpSchema>>({
         resolver: zodResolver(SignUpSchema),
         defaultValues: {
@@ -25,16 +25,6 @@ export const SignUpForm = () => {
             password: "",
         },
     });
-
-    const onSubmit = (values: z.infer<typeof SignUpSchema>) => {
-        fetch("/api/auth/signup", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(values),
-        });
-    };
 
     return (
         <AuthCard
@@ -46,7 +36,7 @@ export const SignUpForm = () => {
             <FormProvider {...form}>
                 <Form
                     action="/api/auth/signup"
-                    onSuccess={() => toast.success("Account created!")}
+                    onSuccess={() => router.push("/")}
                     onError={() => toast.error("Something went wrong.")}
                     className="space-y-6"
                     control={form.control}
@@ -61,7 +51,6 @@ export const SignUpForm = () => {
                                     <FormControl>
                                         <Input
                                             {...field}
-                                            disabled={isPending}
                                             placeholder="something@email.com"
                                             type="text"
                                         />
@@ -79,7 +68,6 @@ export const SignUpForm = () => {
                                         <Input
                                             {...field}
                                             type="password"
-                                            disabled={isPending}
                                             placeholder="********"
                                         />
                                     </FormControl>
