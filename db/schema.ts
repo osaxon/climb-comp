@@ -63,21 +63,23 @@ export const key = pgTable("user_key", {
 
 /// LUCIA
 
-export const comps = pgTable("comp", {
-    id: serial("id").primaryKey(),
-    createdAt: date("created_at").defaultNow(),
-    locationId: integer("location_id")
-        .references(() => locations.id)
-        .notNull(),
-    status: text("status", {
-        enum: ["open", "in progress", "ended"],
-    })
-        .default("open")
-        .notNull(),
-});
-
 export const followers = pgTable(
     "followers",
+    {
+        userId: text("user_id")
+            .notNull()
+            .references(() => user.id, { onDelete: "cascade" }),
+        followerId: text("follower_id")
+            .notNull()
+            .references(() => user.id, { onDelete: "cascade" }),
+    },
+    (c) => ({
+        primaryKey: primaryKey({ columns: [c.userId, c.followerId] }),
+    })
+);
+
+export const following = pgTable(
+    "following",
     {
         userId: text("user_id")
             .notNull()
@@ -90,6 +92,20 @@ export const followers = pgTable(
         primaryKey: primaryKey({ columns: [c.userId, c.followingId] }),
     })
 );
+
+export const comps = pgTable("comp", {
+    id: serial("id").primaryKey(),
+    createdAt: date("created_at").defaultNow(),
+    locationId: integer("location_id")
+        .references(() => locations.id)
+        .notNull(),
+    attemptsPerUser: integer("attempts_per_user").default(20),
+    status: text("status", {
+        enum: ["open", "in progress", "ended"],
+    })
+        .default("open")
+        .notNull(),
+});
 
 export const compParticipants = pgTable(
     "comp_participant",
@@ -110,7 +126,9 @@ export const compParticipants = pgTable(
         primaryKey: primaryKey({ columns: [c.compId, c.userId] }),
     })
 );
-export const compParticipantsSchema = createSelectSchema(compParticipants);
+export const compParticipantsSchema = createSelectSchema(compParticipants, {
+    remainingAttempts: (schema) => schema.remainingAttempts.optional(),
+});
 
 export const attempts = pgTable("attempt", {
     id: serial("id").primaryKey(),
@@ -141,21 +159,20 @@ export const grades = pgTable("grade", {
 
 export const userRelations = relations(user, ({ many }) => ({
     userAttempts: many(attempts),
-    followers: many(followers),
-    following: many(followers),
+    following: many(followers, { relationName: "following" }),
+    followers: many(followers, { relationName: "followers" }),
 }));
 
-export const userFollowersRelations = relations(followers, ({ one }) => ({
-    user: one(user, {
+export const followersRelations = relations(followers, ({ one }) => ({
+    followingUser: one(user, {
         fields: [followers.userId],
         references: [user.id],
+        relationName: "following",
     }),
-}));
-
-export const userFollowingRelations = relations(followers, ({ one }) => ({
-    user: one(user, {
-        fields: [followers.followingId],
+    followerUser: one(user, {
+        fields: [followers.followerId],
         references: [user.id],
+        relationName: "followers",
     }),
 }));
 

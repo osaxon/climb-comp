@@ -5,8 +5,6 @@ import { pg } from "@lucia-auth/adapter-postgresql";
 import { pool } from "@/db";
 import { cache } from "react";
 import * as context from "next/headers";
-import { SessionOptions } from "http2";
-import { User } from "@/db/schema";
 
 export const auth = lucia({
     env: "DEV",
@@ -37,7 +35,7 @@ export const getPageSession = cache(() => {
 // TODO - move to types/app.d.ts
 // Lucia does not export this type currently
 export type Session = {
-    user: User;
+    user: { userId: string; username: string };
     sessionId: string;
     activePeriodExpiresAt: Date;
     idlePeriodExpiresAt: Date;

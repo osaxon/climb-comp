@@ -22,6 +22,27 @@
       "when": 1705657342477,
       "tag": "0002_empty_legion",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1705687281048,
+      "tag": "0003_lying_joshua_kane",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1705695192144,
+      "tag": "0004_left_true_believers",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1705738920423,
+      "tag": "0005_fluffy_russian",
+      "breakpoints": true
     }
   ]
 }

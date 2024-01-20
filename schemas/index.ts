@@ -18,5 +18,5 @@ export const SignUpSchema = z.object({
 
 export const NewCompSchema = z.object({
     locationId: z.coerce.number(),
-    //compParticipants: z.array(compParticipantsSchema),
+    attemptsPerUser: z.number().default(20),
 });
