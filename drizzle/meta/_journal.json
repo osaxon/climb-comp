@@ -43,6 +43,13 @@
       "when": 1705738920423,
       "tag": "0005_fluffy_russian",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1705769372973,
+      "tag": "0006_lumpy_famine",
+      "breakpoints": true
     }
   ]
 }

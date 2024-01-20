@@ -60,14 +60,25 @@ async function setFollowers(values: { id: string; username: string }[]) {
     await db.delete(followers);
     await db.delete(following);
     for (const user of values) {
+        if (user.id === "8j6godwbjh5i7kc") return;
         await db.insert(followers).values({
-            userId: "8j6godwbjh5i7kc",
-            followerId: user.id,
+            user_id: "8j6godwbjh5i7kc",
+            followed_by_id: user.id,
         });
-        // await db.insert(following).values({
-        //     userId: user.id,
-        //     followingId: "8j6godwbjh5i7kc",
-        // });
+        await db.insert(following).values({
+            user_id: user.id,
+            following_id: "8j6godwbjh5i7kc",
+        });
+        if (user.id === "test-user-003") {
+            await db.insert(following).values({
+                user_id: "8j6godwbjh5i7kc",
+                following_id: user.id,
+            });
+            await db.insert(followers).values({
+                user_id: user.id,
+                followed_by_id: "8j6godwbjh5i7kc",
+            });
+        }
     }
     console.log("✅ Followers seeded!");
 }

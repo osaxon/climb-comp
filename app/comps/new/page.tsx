@@ -1,3 +1,4 @@
+import { getUserAndFollowers } from "@/actions/users";
 import { getPageSession } from "@/auth/lucia";
 import { db } from "@/db";
 
@@ -16,14 +17,9 @@ export default async function NewCompPage({
         return <div>Sign in to start a new comp</div>;
     }
 
-    const friends = await db.query.followers.findMany({
-        where: (followers, { eq }) => eq(followers.userId, session.user.userId),
-        with: {
-            followerUser: true,
-        },
-    });
+    const user = await getUserAndFollowers(session.user.userId);
 
-    console.log(friends);
+    console.log(user);
 
     return (
         <main>

@@ -66,30 +66,30 @@ export const key = pgTable("user_key", {
 export const followers = pgTable(
     "followers",
     {
-        userId: text("user_id")
+        user_id: text("user_id")
             .notNull()
             .references(() => user.id, { onDelete: "cascade" }),
-        followerId: text("follower_id")
+        followed_by_id: text("followed_by_id")
             .notNull()
             .references(() => user.id, { onDelete: "cascade" }),
     },
     (c) => ({
-        primaryKey: primaryKey({ columns: [c.userId, c.followerId] }),
+        primaryKey: primaryKey({ columns: [c.user_id, c.followed_by_id] }),
     })
 );
 
 export const following = pgTable(
     "following",
     {
-        userId: text("user_id")
+        user_id: text("user_id")
             .notNull()
             .references(() => user.id, { onDelete: "cascade" }),
-        followingId: text("following_id")
+        following_id: text("following_id")
             .notNull()
             .references(() => user.id, { onDelete: "cascade" }),
     },
     (c) => ({
-        primaryKey: primaryKey({ columns: [c.userId, c.followingId] }),
+        primaryKey: primaryKey({ columns: [c.user_id, c.following_id] }),
     })
 );
 
@@ -159,20 +159,23 @@ export const grades = pgTable("grade", {
 
 export const userRelations = relations(user, ({ many }) => ({
     userAttempts: many(attempts),
-    following: many(followers, { relationName: "following" }),
-    followers: many(followers, { relationName: "followers" }),
+    following: many(following, { relationName: "following" }),
+    followed_by: many(followers, { relationName: "followed_by" }),
 }));
 
 export const followersRelations = relations(followers, ({ one }) => ({
-    followingUser: one(user, {
-        fields: [followers.userId],
+    followed_by_user: one(user, {
+        fields: [followers.user_id],
+        references: [user.id],
+        relationName: "followed_by",
+    }),
+}));
+
+export const followingRelations = relations(following, ({ one }) => ({
+    following_user: one(user, {
+        fields: [following.user_id],
         references: [user.id],
         relationName: "following",
-    }),
-    followerUser: one(user, {
-        fields: [followers.followerId],
-        references: [user.id],
-        relationName: "followers",
     }),
 }));
 
