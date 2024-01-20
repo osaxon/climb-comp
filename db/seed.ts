@@ -1,5 +1,5 @@
 import { db, pool } from ".";
-import { grades, locations, user } from "./schema";
+import { followers, following, grades, locations, user } from "./schema";
 import { auth } from "@/auth/lucia";
 import {
     grades as gradesData,
@@ -12,6 +12,7 @@ async function seed() {
         await insertGrades(gradesData);
         await insertUsers(userData);
         await insertLocations(locationData);
+        await setFollowers(userData);
         console.log("🌱 Seeding complete!");
     } catch (error) {
         console.error(error);
@@ -53,6 +54,22 @@ async function insertLocations(values: { name: string }[]) {
     await db.delete(locations);
     await db.insert(locations).values(values);
     console.log("✅ Locations seeded!");
+}
+
+async function setFollowers(values: { id: string; username: string }[]) {
+    await db.delete(followers);
+    await db.delete(following);
+    for (const user of values) {
+        await db.insert(followers).values({
+            userId: "8j6godwbjh5i7kc",
+            followerId: user.id,
+        });
+        // await db.insert(following).values({
+        //     userId: user.id,
+        //     followingId: "8j6godwbjh5i7kc",
+        // });
+    }
+    console.log("✅ Followers seeded!");
 }
 
 async function selectGrades() {

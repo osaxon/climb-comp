@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { compParticipantsSchema } from "@/db/schema";
 export const LoginSchema = z.object({
     username: z.string(),
     password: z.string().min(1, {
@@ -13,4 +14,9 @@ export const SignUpSchema = z.object({
     password: z.string().min(1, {
         message: "Password is required",
     }),
+});
+
+export const NewCompSchema = z.object({
+    locationId: z.coerce.number(),
+    attemptsPerUser: z.number().default(20),
 });
