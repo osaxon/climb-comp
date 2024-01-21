@@ -1,12 +1,19 @@
+import { getLocations } from "@/actions";
 import { NewCompCard } from "@/components/new-comp-card";
-import { db } from "@/db";
+import StatCard from "@/components/stat-card";
 
 export default async function Dashboard() {
-    const locations = await db.query.locations.findMany();
+    const locations = await getLocations();
+
+    if (!locations) {
+        return <div>No locations</div>;
+    }
+
     return (
         <main className="p-4 border">
             <div className="grid grid-cols-4">
-                <NewCompCard locations={locations} />
+                <NewCompCard locations={locations}/>
+                <StatCard title="Stats" />
             </div>
         </main>
     );

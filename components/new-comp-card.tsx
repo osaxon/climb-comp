@@ -1,5 +1,5 @@
 "use client";
-import { FormCard } from "@/components/form-card-wrapper";
+
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import * as z from "zod";
+import { Card, CardContent, CardFooter, CardHeader } from "./ui/card";
 
 export function NewCompCard({ locations }: { locations: Location[] }) {
     const router = useRouter();
@@ -33,6 +34,7 @@ export function NewCompCard({ locations }: { locations: Location[] }) {
         resolver: zodResolver(NewCompSchema),
         defaultValues: {
             attemptsPerUser: 20,
+            locationId: -1,
         },
     });
 
@@ -49,60 +51,65 @@ export function NewCompCard({ locations }: { locations: Location[] }) {
     }
 
     return (
-        <FormCard
-            headerLabel="New Comp"
-            subHeaderLabel="Start a new bouldering comp"
-        >
-            <Form {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-8"
-                >
-                    <FormField
-                        control={form.control}
-                        name="locationId"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Location</FormLabel>
-                                <Select
-                                    onValueChange={field.onChange}
-                                    defaultValue={String(field.value)}
-                                >
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a location" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {locations.map((location) => (
-                                            <SelectItem
-                                                key={location.id}
-                                                value={String(location.id)}
-                                            >
-                                                {location.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="attemptsPerUser"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Lives per player</FormLabel>
-                                <Input {...field} type="number" />
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <Button type="submit">Next</Button>
-                </form>
-            </Form>
-        </FormCard>
+        <Card>
+            <CardHeader>
+                <div className="w-full flex flex-col gap-y-4 items-center justify-center">
+                    <h1 className="text-3xl font-semibold">Start New</h1>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-8"
+                    >
+                        <FormField
+                            control={form.control}
+                            name="locationId"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Location</FormLabel>
+                                    <Select onValueChange={field.onChange}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a location" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {locations.map((location) => (
+                                                <SelectItem
+                                                    key={location.id}
+                                                    value={String(location.id)}
+                                                >
+                                                    {location.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="attemptsPerUser"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Lives per player</FormLabel>
+                                    <Input {...field} type="number" />
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </form>
+                </Form>
+            </CardContent>
+            <CardFooter>
+                <Button type="submit" onClick={form.handleSubmit(onSubmit)}>
+                    Next
+                </Button>
+            </CardFooter>
+        </Card>
     );
 }
 

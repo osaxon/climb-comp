@@ -17,6 +17,8 @@ export const SignUpSchema = z.object({
 });
 
 export const NewCompSchema = z.object({
-    locationId: z.coerce.number(),
-    attemptsPerUser: z.number().default(20),
+    locationId: z.coerce
+        .number()
+        .nonnegative({ message: "Location is required" }),
+    attemptsPerUser: z.coerce.number().default(20),
 });

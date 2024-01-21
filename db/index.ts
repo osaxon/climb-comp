@@ -8,4 +8,8 @@ const pool = new Pool({
 
 const db = drizzle(pool, { schema });
 
+pool.on("error", (err) =>
+    console.error("Unexpected error on idle client", err)
+);
+
 export { db, pool };

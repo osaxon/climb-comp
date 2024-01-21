@@ -22,7 +22,7 @@ export const FormCard = ({
     showFooter,
 }: FormCardProps) => {
     return (
-        <Card className="w-[400px]">
+        <Card>
             <CardHeader>
                 <div className="w-full flex flex-col gap-y-4 items-center justify-center">
                     <h1 className="text-3xl font-semibold">{headerLabel}</h1>
@@ -34,7 +34,11 @@ export const FormCard = ({
                 </div>
             </CardHeader>
             <CardContent>{children}</CardContent>
-            {showFooter && <CardFooter>{footerContent}</CardFooter>}
+            {showFooter && (
+                <CardFooter className="border flex justify-end">
+                    {footerContent}
+                </CardFooter>
+            )}
         </Card>
     );
 };
